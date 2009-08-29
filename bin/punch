@@ -13,48 +13,6 @@ require 'punch'
 require 'optparse'
 require 'time'
 
-OPTIONS = {}
-MANDATORY_OPTIONS = %w[]
-
-parser = OptionParser.new do |opts|
-  opts.banner = <<BANNER
-Usage: #{File.basename($0)} [command] <project>
-
-Options are:
-BANNER
-  opts.separator ''
-  opts.on('-v', '--version',
-          "Show the #{File.basename($0)} version number and exit") { require 'punch/version'; puts "#{File.basename($0)} #{Punch::VERSION::STRING}"; exit  }
-  opts.on('--after [TIME]', String,
-          "Restrict command to only after the given time") { |time|  OPTIONS[:after] = Time.parse(time) }
-  opts.on('--before [TIME]', String,
-          "Restrict command to only before the given time") { |time|  OPTIONS[:before] = Time.parse(time) }
-  opts.on('--at [TIME]', '--time [TIME]', String,
-          "Use the given time") { |time|  OPTIONS[:time] = Time.parse(time) }
-  opts.on('-m', '--message [MESSAGE]', String,
-          "Use the given log message") { |message|  OPTIONS[:message] = message }
-  opts.on('--full',
-          "Show full output for the command") { |full|  OPTIONS[:full] = true }
-  opts.on('--short',
-          "Show short output for the command") { |full|  OPTIONS[:short] = true }
-  opts.on("-h", "--help",
-          "Show this help message.") { puts opts; exit }
-  opts.parse!(ARGV)
-
-  if MANDATORY_OPTIONS && MANDATORY_OPTIONS.find { |option| OPTIONS[option.to_sym].nil? }
-    puts opts; exit
-  end
-end
-
-command = ARGV[0]
-
-unless command
-  puts "Usage: #{File.basename($0)} [command] <project>"
-  exit
-end
-
-project = ARGV[1]
-
 Punch.load
 
 commands = {
@@ -126,6 +84,52 @@ commands = {
     end
   end
 }
+
+OPTIONS = {}
+MANDATORY_OPTIONS = %w[]
+
+parser = OptionParser.new do |opts|
+  opts.banner = <<BANNER
+Usage: #{File.basename($0)} [command] <project>
+
+Commands are:
+    #{commands.keys.join("\n    ")}
+
+Options are:
+BANNER
+  opts.separator ''
+  opts.on('-v', '--version',
+          "Show the #{File.basename($0)} version number and exit") { require 'punch/version'; puts "#{File.basename($0)} #{Punch::VERSION::STRING}"; exit  }
+  opts.on('--after [TIME]', String,
+          "Restrict command to only after the given time") { |time|  OPTIONS[:after] = Time.parse(time) }
+  opts.on('--before [TIME]', String,
+          "Restrict command to only before the given time") { |time|  OPTIONS[:before] = Time.parse(time) }
+  opts.on('--at [TIME]', '--time [TIME]', String,
+          "Use the given time") { |time|  OPTIONS[:time] = Time.parse(time) }
+  opts.on('-m', '--message [MESSAGE]', String,
+          "Use the given log message") { |message|  OPTIONS[:message] = message }
+  opts.on('--full',
+          "Show full output for the command") { |full|  OPTIONS[:full] = true }
+  opts.on('--short',
+          "Show short output for the command") { |full|  OPTIONS[:short] = true }
+  opts.on("-h", "--help",
+          "Show this help message.") { puts opts; exit }
+  opts.parse!(ARGV)
+
+  if MANDATORY_OPTIONS && MANDATORY_OPTIONS.find { |option| OPTIONS[option.to_sym].nil? }
+    puts opts; exit
+  end
+end
+
+command = ARGV[0]
+
+unless command
+  puts "Usage: #{File.basename($0)} [command] <project>"
+  exit
+end
+
+project = ARGV[1]
+
 
 if command_code = commands[command]
   command_code.call(project)
